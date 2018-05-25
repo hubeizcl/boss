@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa" xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:amq="http://activemq.apache.org/schema/core" xmlns:jms="http://www.springframework.org/schema/jms"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs" 
+	xsi:schemaLocation="
+						http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+						http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+						http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+						http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+						http://www.springframework.org/schema/data/jpa 
+						http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+						http://www.springframework.org/schema/jms
+				        http://www.springframework.org/schema/jms/spring-jms.xsd
+						http://activemq.apache.org/schema/core
+				        http://activemq.apache.org/schema/core/activemq-core-5.8.0.xsd
+				        http://cxf.apache.org/jaxrs 
+				        http://cxf.apache.org/schemas/jaxrs.xsd">
+
+	<!-- 连接池 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="oracle.jdbc.driver.OracleDriver" />
+		<property name="jdbcUrl" value="jdbc:oracle:thin:@192.168.172.10:1521:ORCL" />
+		<property name="user" value="zhangzuolin" />
+		<property name="password" value="1234" />
+	</bean>
+
+	<!-- spring整合JPA -->
+	<bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="packagesToScan" value="cn.itcast.bos.domain" />
+		<!-- 指定持久层提供者为Hibernate -->
+		<property name="persistenceProvider">
+			<bean class="org.hibernate.ejb.HibernatePersistence" />
+		</property>
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<!-- 自动建表 -->
+				<property name="generateDdl" value="true" />
+				<property name="database" value="ORACLE" />
+				<property name="databasePlatform" value="org.hibernate.dialect.Oracle10gDialect" />
+				<property name="showSql" value="true" />
+			</bean>
+		</property>
+		<property name="jpaDialect">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaDialect" />
+		</property>
+	</bean>
+
+	<!-- 事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
+	</bean>
+
+	<!-- 组件扫描 @Service @Controller @Repository -->
+	<context:component-scan
+		base-package="cn.itcast.bos.service,cn.itcast.bos.web,cn.itcast.activemq" />
+
+	<!-- 事务注解支持:@Transactional -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<!-- 整合 spring data jpa -->
+	<jpa:repositories base-package="cn.itcast.bos.dao" />
+	<!-- ActiveMQ 连接工厂 -->
+	<!-- 真正可以产生Connection的ConnectionFactory，由对应的 JMS服务厂商提供 -->
+	<!-- 如果连接网络：tcp://ip:61616；未连接网络：tcp://localhost:61616 以及用户名，密码 -->
+	<amq:connectionFactory id="amqConnectionFactory"
+		brokerURL="tcp://localhost:61616" userName="admin" password="admin" />
+
+	<!-- Spring Caching连接工厂 -->
+	<!-- Spring用于管理真正的ConnectionFactory的ConnectionFactory -->
+	<bean id="connectionFactory"
+		class="org.springframework.jms.connection.CachingConnectionFactory">
+		<!-- 目标ConnectionFactory对应真实的可以产生JMS Connection的ConnectionFactory -->
+		<property name="targetConnectionFactory" ref="amqConnectionFactory"></property>
+		<!-- 同上，同理 -->
+		<!-- <constructor-arg ref="amqConnectionFactory" /> -->
+		<!-- Session缓存数量 -->
+		<property name="sessionCacheSize" value="100" />
+	</bean>
+	<!-- 消息消费者 start -->
+	<!-- 定义Queue监听器 -->
+	<jms:listener-container destination-type="queue"
+		container-type="default" connection-factory="connectionFactory"
+		acknowledge="auto">
+		<jms:listener destination="test.queue" ref="queueReceiver1" />
+		<jms:listener destination="test.queue" ref="queueReceiver2" />
+	</jms:listener-container>
+
+	<jms:listener-container destination-type="queue"
+		container-type="default" connection-factory="connectionFactory"
+		acknowledge="auto">
+		<jms:listener destination="test.map" ref="queueReceiver3" />
+	</jms:listener-container>
+
+	<!-- 定义Topic监听器 -->
+	<jms:listener-container destination-type="topic"
+		container-type="default" connection-factory="connectionFactory"
+		acknowledge="auto">
+		<jms:listener destination="test.topic" ref="topicReceiver1" />
+		<jms:listener destination="test.topic" ref="topicReceiver2" />
+	</jms:listener-container>
+	<!-- 消息消费者 end -->
+	<!-- <jaxrs:server>发布订单服务 -->
+	<jaxrs:server address="/orderservice">
+		<jaxrs:serviceBeans>
+			<ref bean="orderRemoteService"/>
+		</jaxrs:serviceBeans>
+	</jaxrs:server>
+	<bean id="orderRemoteService" class="cn.itcast.bos.service.impl.OrderRemoteServiceImpl"/>
+	
+	<!-- <jaxrs:server>发布宣传任务服务 -->
+	<jaxrs:server address="/promotionservice">
+		<jaxrs:serviceBeans>
+			<ref bean="promotionRemoteService"/>
+		</jaxrs:serviceBeans>
+	</jaxrs:server>
+	<bean id="promotionRemoteService" class="cn.itcast.bos.service.impl.PromotionRemoteServiceImpl"/>
+</beans>
