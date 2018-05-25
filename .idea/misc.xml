@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="FUSUsageTrigger">
+    <session id="-1294810539">
+      <usages-collector id="statistics.spring.core.usages.trigger">
+        <counts>
+          <entry key="fixes.SpringFacetInspection.AddFacetFix" value="2" />
+        </counts>
+      </usages-collector>
+    </session>
+  </component>
+  <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$/bos_fore" />
+    <file type="web" url="file://$PROJECT_DIR$/bos_management_parent/bos_management_web" />
+    <file type="web" url="file://$PROJECT_DIR$/bos_sms" />
+    <file type="web" url="file://$PROJECT_DIR$/common_parent/bos_fore" />
+    <file type="web" url="file://$PROJECT_DIR$/common_parent/bos_management_parent/bos_management_web" />
+    <file type="web" url="file://$PROJECT_DIR$/common_parent/bos_sms" />
+    <file type="web" url="file://$PROJECT_DIR$/common_parent/crm_management" />
+    <file type="web" url="file://$PROJECT_DIR$/crm_management" />
+  </component>
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/bos_fore/pom.xml" />
+        <option value="$PROJECT_DIR$/bos_sms/pom.xml" />
+        <option value="$PROJECT_DIR$/crm_management/pom.xml" />
+        <option value="$PROJECT_DIR$/bos_management_parent/pom.xml" />
+        <option value="$PROJECT_DIR$/common_parent/pom.xml" />
+        <option value="$PROJECT_DIR$/common_parent/bos_management_parent/pom.xml" />
+        <option value="$PROJECT_DIR$/common_parent/bos_sms/pom.xml" />
+        <option value="$PROJECT_DIR$/common_parent/crm_management/pom.xml" />
+        <option value="$PROJECT_DIR$/common_parent/bos_fore/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="false" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+</project>
